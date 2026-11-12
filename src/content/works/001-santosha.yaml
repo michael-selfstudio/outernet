@@ -1,0 +1,10 @@
+number: "001"
+category: branding
+title: Santosha
+project: santosha
+cover: ../projects/santosha/cover.jpg
+alt: A Santosha poster in a city billboard frame.
+tone: "#CDBBA0"
+width: 560
+height: 700
+align: start

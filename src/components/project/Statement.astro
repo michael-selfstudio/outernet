@@ -1,0 +1,61 @@
+---
+/** A label in its own column, then one large passage — Overview, Mission. */
+interface Props {
+	label: string;
+	paragraphs: string[];
+	/** Line height in design px: 50 for Overview, 41 for Mission. */
+	leading?: number;
+}
+
+const { label, paragraphs, leading = 50 } = Astro.props;
+---
+
+<section class="statement wrap" style={`--leading: ${leading / 40}`}>
+	<h2 class="statement__label">{label}</h2>
+	<div class="statement__text rise" data-reveal>
+		{paragraphs.map((p) => <p>{p}</p>)}
+	</div>
+</section>
+
+<style lang="scss">
+	@use '../../styles/tokens' as *;
+
+	.statement {
+		display: flex;
+		gap: k(40);
+
+		@include mobile {
+			flex-direction: column;
+			gap: 16px;
+		}
+	}
+
+	.statement__label {
+		flex: 0 0 k(300);
+		padding-top: k(14);
+		@include label;
+		font-weight: 400;
+
+		// Stacked, a 300px basis would become 300px of height.
+		@include mobile {
+			flex: none;
+			padding-top: 0;
+		}
+	}
+
+	.statement__text {
+		flex: 1;
+		@include serif(40, 50);
+		line-height: var(--leading);
+		display: flex;
+		flex-direction: column;
+		gap: calc(var(--leading) * 1em); // one empty line between paragraphs
+		text-wrap: pretty;
+
+		@include mobile {
+			font-size: 26px;
+			line-height: 1.22;
+			gap: 1.22em;
+		}
+	}
+</style>

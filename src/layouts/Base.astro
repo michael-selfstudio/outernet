@@ -1,0 +1,67 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import { Font } from 'astro:assets';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import { SITE } from '@/lib/site';
+import '@/styles/global.scss';
+
+interface Props {
+	title?: string;
+	description?: string;
+	/** The project header shows the mark instead of the wordmark. */
+	header?: 'wordmark' | 'mark';
+	/** Fonts beyond the two the whole site uses, e.g. a specimen. */
+	extraFonts?: ('--font-raleway')[];
+	image?: string;
+}
+
+const { title, description = SITE.description, header = 'wordmark', extraFonts = [], image = '/og.jpg' } = Astro.props;
+const fullTitle = title ? `${title} — ${SITE.name}` : SITE.name;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<title>{fullTitle}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonical} />
+		<meta name="theme-color" content="#F4EFE6" />
+		<link rel="icon" href="/favicon.png" type="image/png" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content={SITE.name} />
+		<meta property="og:title" content={fullTitle} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonical} />
+		<meta property="og:image" content={new URL(image, Astro.site)} />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta name="twitter:card" content="summary_large_image" />
+
+		<Font cssVariable="--font-serif" preload={[{ style: 'normal' }]} />
+		<Font cssVariable="--font-mono" preload />
+		{extraFonts.map((cssVariable) => <Font cssVariable={cssVariable} />)}
+
+		<!-- Before first paint: hide images until they decode (see Media). -->
+		<script is:inline>document.documentElement.classList.add('js');</script>
+		<ClientRouter fallback="none" />
+	</head>
+	<body>
+		<a class="skip visually-hidden" href="#main">Skip to content</a>
+		<Header variant={header} />
+		<main id="main">
+			<slot />
+		</main>
+		<Footer />
+
+		<script>
+			import { start } from '@/lib/runtime';
+			start();
+		</script>
+	</body>
+</html>

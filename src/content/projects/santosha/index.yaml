@@ -1,0 +1,116 @@
+# Santosha — branding case study. Copy and images from the Figma frame
+# "Branding project — template". Sizes and order of sections are the template;
+# a new case study is a copy of this folder with its own words and images.
+
+title: Santosha
+kicker: branding — case study
+logotype: santosha-logotype
+accent: "#9E4624"
+lede: Santosha exists to support people in staying with themselves, even when everything is not all right.
+description: Santosha — a visual identity for İrem İncesu's mindfulness and yoga practice, by Outernet.
+
+meta:
+  - label: Client
+    lines: [İrem İncesu, Wellness]
+  - label: Services
+    lines: [Visual identity, Art direction]
+  - label: Year
+    lines: ["2026"]
+  - label: Location
+    lines: ["Istanbul, TR"]
+
+hero:
+  image: ./hero.jpg
+  alt: A woman meditating on a tree stump in a sunlit forest.
+
+overview:
+  label: Overview
+  text: Santosha is founded by İrem İncesu who is a mindfulness and yoga teacher İrem & Santosha values compassion, sincerity, realism, warmth, tenderness and peacefullness.
+
+columns:
+  - label: The brief
+    text: "Irem asked for a rebrand and a more coherent visual identity. The real question underneath: how could the brand feel like an invitation to the people she wants to help?"
+  - label: The approach
+    text: I started by investigating. The process began as a heartfelt conversation with İrem, mixed with research, and the two fed each other. What she told me shaped what I looked for, and what I found shaped the identity.
+  - label: The outcome
+    text: Listening came first. Once I understood what İrem needed, the identity followed, and the project was completed with no alterations.
+
+sections:
+  - type: identity
+    title: Identity
+    primary:
+      image: ./identity-primary.jpg
+      alt: The Santosha logotype over a soft spiral galaxy.
+      stars: true
+    side:
+      - image: ./identity-logo.jpg
+        alt: The primary logo, a pale blue butterfly of overlapping petals.
+        label: primary logo
+      - image: ./identity-logo-secondary.jpg
+        alt: The secondary logo, the same butterfly drawn as a single outline.
+        label: secondary logo
+
+  - type: colour
+    title: Colour
+    swatches:
+      - { name: Colour 01, hex: "#ACA54E" }
+      - { name: Colour 02, hex: "#A1C3DA" }
+      - { name: Colour 03, hex: "#9E4624" }
+      - { name: Colour 04, hex: "#AE7F1C" }
+      - { name: Colour 05, hex: "#F5B0B5" }
+
+  - type: typography
+    title: Typography
+    faces:
+      - role: primary typeface
+        name: Charis SIL
+        specimen: { svg: specimen-charis }
+      - role: secondary typeface
+        name: Railway Sans
+        specimen: { font: --font-raleway }
+
+  - type: statement
+    label: Mission
+    paragraphs:
+      - Rather than aiming to make life more beautiful, Santosha seeks to make it more balanced.
+      - Santosha’s intention is to gently remind those who have lost their self-confidence and sense of self of (self)-love and compassion.
+      - It also aims to support people through moments in their life cycles where they may feel stuck, lonely, or helpless.
+
+  - type: applications
+    title: Applications
+    rows:
+      - layout: full
+        item:
+          image: ./application-hands.jpg
+          alt: Hands pressed together in prayer, the outline butterfly drawn over them.
+      - layout: pair
+        items:
+          - image: ./application-laptop.jpg
+            alt: The butterfly logo on a laptop screen.
+          - image: ./application-phone.jpg
+            alt: The Santosha Instagram profile on a phone held in two hands.
+      - layout: line
+        text: A gentle reminder for love and compassion
+      - layout: pair
+        items:
+          - image: ./application-poster.jpg
+            alt: "A poster for FEEL, a monthly online workshop by Santosha."
+            background: "#AD6447"
+            mat: { width: 411, height: 560 }
+          - image: ./application-tote.jpg
+            alt: An olive tote bag printed with the outline butterfly and the line “A gentle reminder for love and compassion”.
+
+credits:
+  - label: Provided services
+    list:
+      - Logo & Logotype Design
+      - Brand Identity Design
+      - Visual Identity System
+      - Brand Guidelines
+      - Typography & Color System
+      - Content Design & Strategy
+  - label: Keywords
+    text: woman entrepreneur, conscious branding, slow branding, anti consumption, connecting brands, human oriented
+  - label: Links
+    links:
+      - { label: Instagram, href: "https://www.instagram.com/iremincessu/" }

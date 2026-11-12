@@ -1,0 +1,307 @@
+---
+/**
+ * The index: works hung one per row at the sizes, sides and order of the
+ * Figma file, each with its number and kind beneath. Entries with a case
+ * study open it; the rest are fields of colour waiting for their pictures.
+ *
+ * Between index pages ("work", "paintings", …) each entry keeps its
+ * view-transition name, so a filter does not reload the wall — the works
+ * that stay glide to their new places and the rest fade.
+ */
+import type { CollectionEntry } from 'astro:content';
+import Media from './Media.astro';
+import { CATEGORIES } from '@/lib/site';
+
+interface Props {
+	works: CollectionEntry<'works'>[];
+	empty?: string;
+}
+
+const { works, empty = 'Nothing here yet.' } = Astro.props;
+---
+
+{
+	works.length ? (
+		<section class="index wrap" aria-label="Work">
+			<ol class="rows">
+				{works.map(({ id, data }) => {
+					const href = data.project ? `/work/${data.project.id}` : undefined;
+					const Tag = href ? 'a' : 'div';
+					const caption = `${data.number} — ${CATEGORIES[data.category].caption} / ${data.title}`;
+					return (
+						<li class:list={['row', `row--${data.align}`]}>
+							<Tag
+								class="work"
+								href={href}
+								data-cursor={href ? `open ${data.title}` : 'soon'}
+								style={`--w: ${data.width}; --h: ${data.height}; --tone: ${data.tone}`}
+								transition:name={`work-${id}`}
+							>
+								<div class="work__frame" data-reveal>
+									{data.cover ? (
+										<Media
+											class="work__media"
+											image={data.cover}
+											alt={data.alt}
+											sizes={`(max-width: 820px) 100vw, ${Math.round((data.width / 1440) * 100)}vw`}
+										/>
+									) : (
+										<span class="work__field" />
+									)}
+								</div>
+								<p class="work__caption">
+									<span>{caption}</span>
+								</p>
+							</Tag>
+						</li>
+					);
+				})}
+			</ol>
+			<div class="cursor" aria-hidden="true">
+				<span class="cursor__label" />
+			</div>
+		</section>
+	) : (
+		<section class="index wrap index--empty">
+			<p class="empty">{empty}</p>
+			<a class="empty__back" href="/">← all work</a>
+		</section>
+	)
+}
+
+<script>
+	/**
+	 * Motion note 2: the cursor shows the name of what it is over. A label
+	 * follows the pointer with a little lag, only where there is a pointer.
+	 */
+	document.addEventListener('astro:page-load', () => {
+		const index = document.querySelector<HTMLElement>('.index');
+		const cursor = index?.querySelector<HTMLElement>('.cursor');
+		const label = cursor?.querySelector<HTMLElement>('.cursor__label');
+		if (!index || !cursor || !label) return;
+		if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+		let x = 0, y = 0, cx = 0, cy = 0, raf = 0, shown = false;
+		const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		const tick = () => {
+			cx += (x - cx) * (still ? 1 : 0.18);
+			cy += (y - cy) * (still ? 1 : 0.18);
+			cursor.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
+			raf = Math.abs(x - cx) + Math.abs(y - cy) > 0.1 ? requestAnimationFrame(tick) : 0;
+		};
+
+		index.addEventListener('pointermove', (event) => {
+			x = event.clientX;
+			y = event.clientY;
+			const work = (event.target as Element).closest<HTMLElement>('[data-cursor]');
+			if (work) {
+				if (!shown) {
+					cx = x;
+					cy = y;
+				}
+				label.textContent = work.dataset.cursor ?? '';
+			}
+			shown = !!work;
+			cursor.toggleAttribute('data-on', shown);
+			if (!raf) raf = requestAnimationFrame(tick);
+		});
+		index.addEventListener('pointerleave', () => {
+			shown = false;
+			cursor.removeAttribute('data-on');
+		});
+	});
+
+	/**
+	 * Arriving at another index page, the works already on screen are shown
+	 * at once: the transition photographs the new page immediately, and a
+	 * picture still masked at that moment would glide into place invisible.
+	 */
+	document.addEventListener('astro:after-swap', () => {
+		document.querySelectorAll<HTMLElement>('.index [data-reveal]').forEach((el) => {
+			if (el.getBoundingClientRect().top < innerHeight) el.classList.add('is-in', 'is-instant');
+		});
+	});
+</script>
+
+<style lang="scss">
+	@use '../styles/tokens' as *;
+
+	.index {
+		padding-bottom: k(140);
+		position: relative;
+
+		@include mobile {
+			padding-bottom: 96px;
+		}
+	}
+
+	.rows {
+		display: flex;
+		flex-direction: column;
+		gap: k(112);
+
+		@include mobile {
+			gap: 64px;
+		}
+	}
+
+	.row {
+		display: flex;
+
+		&--start {
+			justify-content: flex-start;
+		}
+
+		&--center {
+			justify-content: center;
+		}
+
+		&--end {
+			justify-content: flex-end;
+		}
+	}
+
+	.work {
+		display: flex;
+		flex-direction: column;
+		gap: k(12, 10);
+		width: calc(var(--w) * var(--k));
+
+		@include mobile {
+			// A narrow screen keeps the rhythm of big and small, not the sizes:
+			// 760-wide works span the screen, the rest step in proportionally.
+			width: min(100%, calc(var(--w) / 760 * 100%));
+		}
+	}
+
+	.work__frame {
+		position: relative;
+		aspect-ratio: var(--w) / var(--h);
+		overflow: hidden;
+		background: var(--tone);
+	}
+
+	.work__field,
+	.work__frame :global(.media) {
+		position: absolute;
+		inset: 0;
+	}
+
+	.work__frame :global(img) {
+		transition:
+			opacity 900ms $settle,
+			transform 1800ms $settle;
+	}
+
+	.work__caption {
+		@include mono(12, 11);
+	}
+
+	a.work {
+		@include hover {
+			.work__frame :global(img) {
+				transform: scale(1.025);
+			}
+
+			.work__caption span {
+				text-decoration: underline;
+				text-decoration-thickness: from-font;
+				text-underline-position: from-font;
+			}
+		}
+	}
+
+	// ─── Arrival ───────────────────────────────────────────────────────────
+	// The picture rises out of a mask from its lower edge while settling
+	// from a slight enlargement; the caption follows.
+	@include motion {
+		:global(html.js) .work__frame {
+			clip-path: inset(100% 0 0 0);
+			transition: clip-path 1400ms $sweep;
+
+			& + .work__caption {
+				opacity: 0;
+				transform: translateY(6px);
+				transition:
+					opacity 900ms $settle 450ms,
+					transform 900ms $settle 450ms;
+			}
+
+			:global(.media) {
+				transform: scale(1.12);
+				transition: transform 2000ms $settle;
+			}
+
+			&:global(.is-in) {
+				clip-path: inset(0 0 0 0);
+
+				& + .work__caption {
+					opacity: 1;
+					transform: none;
+				}
+
+				:global(.media) {
+					transform: none;
+				}
+			}
+
+			&:global(.is-instant),
+			&:global(.is-instant) + .work__caption,
+			&:global(.is-instant) :global(.media) {
+				transition: none;
+			}
+		}
+	}
+
+	// ─── Cursor label ──────────────────────────────────────────────────────
+	.cursor {
+		position: fixed;
+		left: 0;
+		top: 0;
+		z-index: 10;
+		pointer-events: none;
+	}
+
+	.cursor__label {
+		display: block;
+		@include mono(12, 11);
+		padding: k(8, 6) k(14, 10);
+		border: 1px solid var(--ink);
+		border-radius: 999px;
+		background: var(--paper);
+		white-space: nowrap;
+		transform: translate(14px, 14px) scale(0.6);
+		opacity: 0;
+		transition:
+			opacity 300ms $settle,
+			transform 500ms $settle;
+
+		.cursor[data-on] & {
+			opacity: 1;
+			transform: translate(14px, 14px) scale(1);
+		}
+	}
+
+	@media (hover: none), (pointer: coarse) {
+		.cursor {
+			display: none;
+		}
+	}
+
+	// ─── Empty kinds ───────────────────────────────────────────────────────
+	.index--empty {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 24px;
+		padding-bottom: k(140);
+		@include mono(13);
+	}
+
+	.empty__back {
+		@include hover {
+			text-decoration: underline;
+		}
+	}
+</style>

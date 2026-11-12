@@ -1,0 +1,31 @@
+---
+/**
+ * A project's logotype, drawn from its SVG in src/assets/svg. The client's
+ * brand face (Soligant) is not licensed for the web, so the letters come out
+ * of Figma as outlines; they take the text colour.
+ */
+interface Props {
+	name: string;
+	title: string;
+}
+
+const { name, title } = Astro.props;
+const svgs = import.meta.glob<string>('/src/assets/svg/*.svg', { query: '?raw', import: 'default', eager: true });
+const raw = svgs[`/src/assets/svg/${name}.svg`];
+if (!raw) throw new Error(`No logotype src/assets/svg/${name}.svg`);
+const svg = raw.replace(/aria-label="[^"]*"/, `aria-label="${title}"`);
+---
+
+<span class="logotype" set:html={svg} />
+
+<style>
+	.logotype {
+		display: block;
+	}
+
+	.logotype :global(svg) {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+</style>

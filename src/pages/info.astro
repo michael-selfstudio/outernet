@@ -1,0 +1,153 @@
+---
+/**
+ * Info: the portrait, then the CV in three columns — Figma frame
+ * "Info — Outernet (v2 style)".
+ */
+import { getEntry } from 'astro:content';
+import Base from '@/layouts/Base.astro';
+import Media from '@/components/Media.astro';
+
+const cv = await getEntry('info', 'cv');
+if (!cv) throw new Error('src/content/info/info.yaml has no `cv` entry');
+const { portrait, alt, columns } = cv.data;
+---
+
+<Base title="Info" description="Dilar — education, work, exhibitions, workshops and acting.">
+	<section class="portrait wrap">
+		{portrait && <Media class="portrait__media" image={portrait} alt={alt} sizes="(max-width: 820px) 100vw, 42vw" eager />}
+	</section>
+
+	<section class="cv wrap" aria-label="CV">
+		{
+			columns.map((column) => (
+				<div class="cv__column">
+					{column.map((section) => (
+						<section class="cv__section" data-reveal>
+							<h2 class="cv__title">{section.title}</h2>
+							<ul class="cv__entries">
+								{section.entries.map((entry) => (
+									<li>
+										<p class="cv__name">{entry.name}</p>
+										{entry.lines.map((line) => (
+											<p>{line}</p>
+										))}
+										{entry.link && (
+											<a class="cv__link u" href={entry.link} target="_blank" rel="noopener">
+												Link
+											</a>
+										)}
+									</li>
+								))}
+							</ul>
+						</section>
+					))}
+				</div>
+			))
+		}
+	</section>
+</Base>
+
+<style lang="scss">
+	@use '../styles/tokens' as *;
+
+	.portrait {
+		padding-block: k(24) k(80);
+
+		@include mobile {
+			padding-block: 8px 48px;
+		}
+	}
+
+	.portrait :global(.portrait__media) {
+		width: k(602);
+		aspect-ratio: 602 / 401;
+
+		@include mobile {
+			width: 100%;
+		}
+	}
+
+	.cv {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: k(40);
+		align-items: start;
+		padding-bottom: k(120);
+
+		@include mobile {
+			grid-template-columns: 1fr;
+			gap: 40px;
+			padding-bottom: 72px;
+		}
+	}
+
+	.cv__column {
+		display: flex;
+		flex-direction: column;
+		gap: k(56);
+
+		@include mobile {
+			gap: 40px;
+		}
+	}
+
+	.cv__section {
+		display: flex;
+		flex-direction: column;
+		gap: k(28);
+		border-top: 1px solid var(--ink);
+		padding-top: k(14);
+
+		@include mobile {
+			gap: 20px;
+			padding-top: 12px;
+		}
+	}
+
+	.cv__title {
+		@include label;
+		font-weight: 400;
+	}
+
+	.cv__entries {
+		display: flex;
+		flex-direction: column;
+		gap: k(28);
+		@include serif(21, 27, 17);
+
+		@include mobile {
+			gap: 22px;
+		}
+	}
+
+	.cv__name {
+		font-style: italic;
+	}
+
+	.cv__link {
+		color: var(--oxblood);
+		text-decoration-skip-ink: none;
+	}
+
+	// The rule draws itself across, then the entries settle in.
+	@include motion {
+		:global(html.js) .cv__section {
+			border-top-color: transparent;
+			background: linear-gradient(var(--ink), var(--ink)) top left / 0% 1px no-repeat;
+			transition: background-size 1200ms $sweep;
+
+			> * {
+				opacity: 0;
+				transition: opacity 900ms $settle 300ms;
+			}
+
+			&:global(.is-in) {
+				background-size: 100% 1px;
+
+				> * {
+					opacity: 1;
+				}
+			}
+		}
+	}
+</style>

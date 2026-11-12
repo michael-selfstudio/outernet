@@ -1,0 +1,243 @@
+---
+/**
+ * A case study — Figma frame "Branding project — template". The page is the
+ * template; the words and pictures come from
+ * src/content/projects/<slug>/index.yaml, so a new case study is a new
+ * folder, not new code.
+ */
+import type { GetStaticPaths } from 'astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Base from '@/layouts/Base.astro';
+import Media from '@/components/Media.astro';
+import Columns from '@/components/project/Columns.astro';
+import Statement from '@/components/project/Statement.astro';
+import SectionHead from '@/components/project/SectionHead.astro';
+import Logotype from '@/components/project/Logotype.astro';
+import Identity from '@/components/project/Identity.astro';
+import Colour from '@/components/project/Colour.astro';
+import Typography from '@/components/project/Typography.astro';
+import Applications from '@/components/project/Applications.astro';
+
+export const getStaticPaths = (async () => {
+	const projects = await getCollection('projects');
+	return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}) satisfies GetStaticPaths;
+
+const { project } = Astro.props as { project: CollectionEntry<'projects'> };
+const p = project.data;
+const fonts = p.sections.some((s) => s.type === 'typography' && s.faces.some((f) => 'font' in f.specimen))
+	? (['--font-raleway'] as const)
+	: [];
+let n = 0;
+---
+
+<Base title={p.title} description={p.description} header="mark" extraFonts={[...fonts]}>
+	<article style={`--accent: ${p.accent}`}>
+		<header class="intro wrap">
+			<p class="kicker">{p.kicker}</p>
+			<h1 class="title">
+				{p.logotype ? <Logotype name={p.logotype} title={p.title} /> : p.title}
+			</h1>
+			<p class="lede">{p.lede}</p>
+		</header>
+
+		<Columns class="meta" items={p.meta} />
+
+		<div class="hero wrap">
+			<div class="hero__frame unmask" data-reveal>
+				<Media image={p.hero.image} alt={p.hero.alt} video={p.hero.video} sizes="(max-width: 820px) 100vw, 95vw" eager />
+			</div>
+		</div>
+
+		<div class="overview">
+			<Statement label={p.overview.label} paragraphs={[p.overview.text]} />
+		</div>
+
+		<Columns class="bao" items={p.columns} />
+
+		{
+			p.sections.map((section) => {
+				switch (section.type) {
+					case 'identity':
+						return (
+							<section class="part part--identity wrap">
+								<SectionHead number={++n} title={section.title} />
+								<Identity primary={section.primary} side={section.side} logotype={p.logotype} title={p.title} />
+							</section>
+						);
+					case 'colour':
+						return (
+							<section class="part part--colour wrap">
+								<SectionHead number={++n} title={section.title} />
+								<Colour swatches={section.swatches} />
+							</section>
+						);
+					case 'typography':
+						return (
+							<section class="part part--typography wrap">
+								<SectionHead number={++n} title={section.title} />
+								<Typography faces={section.faces} />
+							</section>
+						);
+					case 'statement':
+						return (
+							<div class="mission">
+								<Statement label={section.label} paragraphs={section.paragraphs} leading={41} />
+							</div>
+						);
+					case 'applications':
+						return (
+							<section class="part part--applications wrap">
+								<SectionHead number={++n} title={section.title} />
+								<Applications rows={section.rows} />
+							</section>
+						);
+				}
+			})
+		}
+
+		<Columns class="credits" items={p.credits} />
+	</article>
+</Base>
+
+<style lang="scss">
+	@use '../../styles/tokens' as *;
+
+	// Vertical rhythm of the template, top to bottom, in design px.
+	.intro {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: k(24);
+		padding-block: k(96) k(64);
+
+		@include mobile {
+			gap: 16px;
+			padding-block: 48px 40px;
+		}
+	}
+
+	.kicker {
+		@include label;
+	}
+
+	// The exported outline is the letters only; the margins restore the
+	// text box they sat in (499 × 155 at 139px), so the rhythm matches.
+	.title {
+		width: k(475);
+		margin: k(9.4) 0 k(35.3) k(2.78);
+		color: #000;
+		font-weight: 400;
+		@include serif(139, 155);
+
+		@include mobile {
+			width: min(72vw, 320px);
+			margin-block: 4px 16px;
+		}
+	}
+
+	.lede {
+		max-width: k(900);
+		color: var(--accent);
+		@include serif(32, 40);
+		text-wrap: pretty;
+
+		@include mobile {
+			font-size: 22px;
+		}
+	}
+
+	:global(.meta) {
+		padding-bottom: k(72);
+
+		@include mobile {
+			padding-bottom: 48px;
+		}
+	}
+
+	.hero {
+		padding-bottom: k(120);
+
+		@include mobile {
+			padding-bottom: 64px;
+		}
+	}
+
+	.hero__frame {
+		position: relative;
+		aspect-ratio: 1360 / 775;
+		border-radius: k(40);
+		overflow: hidden;
+
+		> :global(.media) {
+			position: absolute;
+			inset: 0;
+		}
+
+		@include mobile {
+			aspect-ratio: 4 / 5;
+			border-radius: 20px;
+		}
+	}
+
+	.overview {
+		padding-bottom: k(120);
+
+		@include mobile {
+			padding-bottom: 64px;
+		}
+	}
+
+	:global(.bao) {
+		padding-bottom: k(60);
+
+		@include mobile {
+			padding-bottom: 64px;
+		}
+	}
+
+	.part {
+		display: flex;
+		flex-direction: column;
+		gap: k(32);
+		padding-bottom: k(140);
+
+		@include mobile {
+			gap: 20px;
+			padding-bottom: 72px;
+		}
+	}
+
+	.part--typography {
+		padding-bottom: k(75);
+	}
+
+	// Measured against the Figma render: the gallery ends 153px above the
+	// credits rule (the frame has a fixed height and clips its last row).
+	.part--applications {
+		padding-bottom: k(153);
+
+		@include mobile {
+			padding-bottom: 72px;
+		}
+	}
+
+	.mission {
+		padding-bottom: k(80);
+
+		@include mobile {
+			padding-bottom: 64px;
+		}
+	}
+
+	// 283px tall in the file, clipped; 63 below the list lands the footer
+	// rule where the file has it.
+	:global(.credits) {
+		opacity: 0.8;
+		padding-bottom: k(63);
+
+		@include mobile {
+			padding-bottom: 56px;
+		}
+	}
+</style>

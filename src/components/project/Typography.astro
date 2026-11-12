@@ -1,0 +1,129 @@
+---
+/**
+ * 03 — Typography. Each face shows "Aa" on a card. The Charis SIL letters
+ * are outlines exported from Figma (no need to load a whole family for two
+ * glyphs); Raleway is a free family and is set live.
+ */
+interface Face {
+	role: string;
+	name: string;
+	specimen: { svg: string } | { font: string };
+}
+
+interface Props {
+	faces: Face[];
+}
+
+const { faces } = Astro.props;
+const svgs = import.meta.glob<string>('/src/assets/svg/*.svg', { query: '?raw', import: 'default', eager: true });
+const svgFor = (name: string) => {
+	const raw = svgs[`/src/assets/svg/${name}.svg`];
+	if (!raw) throw new Error(`No specimen src/assets/svg/${name}.svg`);
+	return raw;
+};
+---
+
+<div class="faces rise" data-reveal>
+	{
+		faces.map((face, i) => (
+			<figure class:list={['face', i === 0 ? 'face--primary' : 'face--secondary']}>
+				<span class="face__label">Typography</span>
+				{'svg' in face.specimen ? (
+					<span class="face__svg" set:html={svgFor(face.specimen.svg)} />
+				) : (
+					<span class="face__live" style={`font-family: var(${face.specimen.font})`}>
+						Aa
+					</span>
+				)}
+				<figcaption class="face__label">
+					{face.role} — {face.name}
+				</figcaption>
+			</figure>
+		))
+	}
+</div>
+
+<style lang="scss">
+	@use '../../styles/tokens' as *;
+
+	.faces {
+		display: flex;
+		gap: k(24);
+		height: k(440);
+		border-radius: k(40);
+		overflow: hidden;
+		color: var(--ink);
+
+		@include mobile {
+			flex-direction: column;
+			height: auto;
+			gap: 12px;
+			border-radius: 20px;
+		}
+	}
+
+	.face {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		align-items: flex-start;
+		padding: k(16, 12);
+		background: var(--card);
+		overflow: hidden;
+
+		@include mobile {
+			flex: none;
+			height: 280px;
+		}
+	}
+
+	.face--primary {
+		flex: 1 1 0;
+	}
+
+	.face--secondary {
+		flex: 0 0 k(440);
+	}
+
+	@include mobile {
+		.face--primary,
+		.face--secondary {
+			flex: none;
+		}
+	}
+
+	.face__label {
+		@include mono(12, 10);
+		white-space: nowrap;
+	}
+
+	// The exported outline keeps its place on the card: x 17, y 134 of 896.
+	.face__svg {
+		position: absolute;
+		left: k(17.37);
+		top: k(133.64);
+		width: k(326);
+
+		@include mobile {
+			left: 16px;
+			top: 50%;
+			width: 190px;
+			transform: translateY(-50%);
+		}
+
+		:global(svg) {
+			width: 100%;
+			height: auto;
+		}
+	}
+
+	.face__live {
+		font-size: k(120);
+		line-height: 1;
+
+		@include mobile {
+			font-size: 96px;
+		}
+	}
+</style>

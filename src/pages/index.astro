@@ -1,0 +1,15 @@
+---
+import Base from '@/layouts/Base.astro';
+import Intro from '@/components/Intro.astro';
+import WorkIndex from '@/components/WorkIndex.astro';
+import { getWorks } from '@/lib/works';
+
+const works = await getWorks();
+---
+
+<Base>
+	<Intro
+		text="Hi! I’m a designer and artist in Istanbul. Under the name Outernet I investigate belonging. As a non-architect thinker I explore space, thresholds and boundaries. I take experimentation and investigation as a base for all of my creations."
+	/>
+	<WorkIndex works={works} />
+</Base>

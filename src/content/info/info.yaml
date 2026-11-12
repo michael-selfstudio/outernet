@@ -1,0 +1,56 @@
+# The CV on the info page, column by column as in the Figma frame
+# "Info — Outernet (v2 style)". Each entry: the name (set in italic), then its
+# lines, then an optional link.
+#
+# Two links below are still empty in Figma — the "Link" under the KTSM
+# workshops and the music video and short film. Add `link: https://…` to an
+# entry and it appears.
+
+cv:
+  portrait: ./portrait.jpg
+  alt: Dilar, a soft-focus black and white portrait.
+  columns:
+    - - title: Education
+        entries:
+          - name: B.Arch
+            lines: [Istanbul Bilgi University, 2015 - 2020]
+      - title: Employment
+        entries:
+          - name: Outernet Studio
+            lines: [Freelance Brand Designer, Remote, Since 2024]
+          - name: Devrim Erbil Art Culture And Education Foundation
+            lines: [Studio Assistant, "Istanbul, TR", 2023 - 2024]
+          - name: Self Studio
+            lines: [UX/UI Brand Design Internship, "London, UK", "2023"]
+          - name: Küçük & Co
+            lines: [Brand Designer, Remote, 2021 - 2023]
+          - name: A7 Architects
+            lines: [Intern Architect, "Lviv, Ukraine", "2021"]
+    - - title: Exhibitions
+        entries:
+          - name: Karl And Ein Gallery
+            lines: [VUSLAT Mixed Art Exhibition, "Istanbul, TR", "2021"]
+          - name: Gallerie D’Art La Visione
+            lines: ["EMPHATY Mixed Art Exhibiton,", "Istanbul, TR", "2021"]
+          - name: Santa Maria Draperis Church
+            lines: [Four Seasons Special Mixed Art Exhibition II, "Istanbul, TR", "2021"]
+      - title: Volunteering
+        entries:
+          - name: Chateau Chapiteau
+            lines: [Recycling and Animal Care, "Kakheti, Georgia", "2023"]
+          - name: Köyünü Yaşat
+            lines: [Restoration of a village house into student housing, "Bilecik, TR", "2016"]
+    - - title: Workshops
+        entries:
+          - name: KTSM Upcycling Workshop & Exhibition
+            lines: [Designing and producing upcycled artworks, "Istanbul, TR", "2021"]
+          - name: KTSM Açık Kaynak Perşembe Pazarı & Exhibition
+            lines: [Designing and producing a lighting object completely from access materials of the construction markets of Istanbul., "Istanbul, TR", "2019"]
+      - title: Acting
+        entries:
+          - name: Yerden Yüksek
+            lines: [Short Film, "Istanbul, TR", "2024"]
+          - name: Parya X Rinxlaya - gizli tiyatro
+            lines: [Music Video, "Istanbul, TR", "2023"]
+          - name: ÖZ / QUINTESSENCE
+            lines: [Short Film, "Istanbul, TR", "2019"]

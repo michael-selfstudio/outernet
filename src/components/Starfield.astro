@@ -1,0 +1,156 @@
+---
+/**
+ * "Spiral stars — seamless 20s motion" from the Santosha identity card: 160
+ * grains of stardust turning around the logotype and drifting outward.
+ *
+ * The Figma file animates each grain with its own 120-step keyframe track.
+ * As CSS that is ~1 MB of keyframes for a background; instead the tracks were
+ * measured (star 001: ~3.35 turns about the card's centre per 20 s, radius
+ * growing ~465 px per loop, opacity rising then fading) and the same motion
+ * is drawn on a canvas from the 160 starting points in the file, so the
+ * swirl begins exactly where the design has it. Unlike the file, the loop has
+ * no seam: each grain is reborn at the centre as it fades at the edge.
+ */
+---
+
+<canvas class="stars" aria-hidden="true" data-stars></canvas>
+
+<script>
+	import seeds from '@/lib/stars.json';
+
+	// The card the motion was drawn in, and its centre.
+	const W = 896;
+	const H = 640;
+	const CX = W / 2;
+	const CY = H / 2;
+	const LOOP = 20_000; // ms
+	const TURNS = 3.35; // per loop, clockwise on screen
+	const GROWTH = 465; // design px of radius per loop
+	const BORN = 6; // radius a grain reappears at
+	const GONE = Math.hypot(CX, CY) + 20; // past the corners
+	const INK = '255, 246, 219'; // #FFF6DB
+
+	type Grain = { r0: number; a0: number; size: number; peak: number; phase: number };
+
+	const grains: Grain[] = (seeds as [number, number, number][]).map(([left, top, size], i) => {
+		const x = left + size / 2;
+		const y = top + size / 2;
+		return {
+			r0: Math.hypot(x - CX, y - CY),
+			a0: Math.atan2(y - CY, x - CX),
+			size,
+			// Star 001, the smallest, peaks at 0.26; larger grains read brighter.
+			peak: 0.26 + 0.6 * ((size - 0.85) / 2.46),
+			phase: i * 2.399, // golden angle: twinkles never line up
+		};
+	});
+
+	function mount(canvas: HTMLCanvasElement) {
+		const ctx = canvas.getContext('2d');
+		if (!ctx) return () => {};
+		const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+		let scale = 1;
+		let raf = 0;
+		let visible = false;
+		let t0 = performance.now();
+
+		const resize = () => {
+			const { width, height } = canvas.getBoundingClientRect();
+			const dpr = Math.min(devicePixelRatio || 1, 2);
+			canvas.width = Math.round(width * dpr);
+			canvas.height = Math.round(height * dpr);
+			// Cover the card as the image does: scale to the larger side and
+			// centre. From here on everything is drawn in design pixels.
+			scale = Math.max(width / W, height / H);
+			const k = dpr * scale;
+			ctx.setTransform(k, 0, 0, k, dpr * (width / 2 - CX * scale), dpr * (height / 2 - CY * scale));
+			if (still || !visible) draw(0);
+		};
+
+		const draw = (ms: number) => {
+			const t = ms / LOOP;
+			const span = GONE - BORN;
+			ctx.save();
+			ctx.setTransform(1, 0, 0, 1, 0, 0);
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			ctx.restore();
+			const minRadius = 0.5 / scale; // never thinner than half a CSS pixel
+			for (const g of grains) {
+				const r = BORN + ((((g.r0 - BORN + GROWTH * t) % span) + span) % span);
+				const a = g.a0 + TURNS * 2 * Math.PI * t;
+				const fadeIn = Math.min(1, (r - BORN) / 60);
+				const fadeOut = Math.min(1, (GONE - r) / 110);
+				const twinkle = 0.82 + 0.18 * Math.sin(ms / 900 + g.phase);
+				const alpha = g.peak * fadeIn * fadeOut * twinkle;
+				if (alpha <= 0.01) continue;
+				const x = CX + r * Math.cos(a);
+				const y = CY + r * Math.sin(a);
+				const radius = Math.max(minRadius, g.size / 2);
+				ctx.fillStyle = `rgba(${INK}, ${alpha})`;
+				ctx.beginPath();
+				ctx.arc(x, y, radius, 0, Math.PI * 2);
+				ctx.fill();
+				if (g.size > 2) {
+					// A faint halo on the larger grains, as the file's glow.
+					ctx.fillStyle = `rgba(${INK}, ${alpha * 0.18})`;
+					ctx.beginPath();
+					ctx.arc(x, y, radius * 3, 0, Math.PI * 2);
+					ctx.fill();
+				}
+			}
+		};
+
+		const frame = (now: number) => {
+			draw(now - t0);
+			raf = requestAnimationFrame(frame);
+		};
+
+		const play = () => {
+			if (still || raf || !visible || document.hidden) return;
+			raf = requestAnimationFrame(frame);
+		};
+		const pause = () => {
+			cancelAnimationFrame(raf);
+			raf = 0;
+		};
+
+		const ro = new ResizeObserver(resize);
+		ro.observe(canvas);
+		const io = new IntersectionObserver(([entry]) => {
+			visible = entry.isIntersecting;
+			if (visible) play();
+			else pause();
+		});
+		io.observe(canvas);
+		const onVisibility = () => (document.hidden ? pause() : play());
+		document.addEventListener('visibilitychange', onVisibility);
+		t0 = performance.now();
+
+		return () => {
+			pause();
+			ro.disconnect();
+			io.disconnect();
+			document.removeEventListener('visibilitychange', onVisibility);
+		};
+	}
+
+	let unmount: (() => void)[] = [];
+	document.addEventListener('astro:page-load', () => {
+		unmount = [...document.querySelectorAll<HTMLCanvasElement>('[data-stars]')].map(mount);
+	});
+	document.addEventListener('astro:before-swap', () => {
+		unmount.forEach((fn) => fn());
+		unmount = [];
+	});
+</script>
+
+<style>
+	.stars {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+		mix-blend-mode: screen;
+	}
+</style>

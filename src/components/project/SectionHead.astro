@@ -1,0 +1,26 @@
+---
+/** The numbered rule that opens a part of a case study: "01 — Identity". */
+interface Props {
+	number: number;
+	title: string;
+}
+
+const { number, title } = Astro.props;
+---
+
+<h2 class="head">{String(number).padStart(2, '0')} — {title}</h2>
+
+<style lang="scss">
+	@use '../../styles/tokens' as *;
+
+	.head {
+		border-top: 1px solid var(--ink);
+		padding-top: k(14);
+		@include label;
+		font-weight: 400;
+
+		@include mobile {
+			padding-top: 12px;
+		}
+	}
+</style>

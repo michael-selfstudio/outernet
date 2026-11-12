@@ -1,0 +1,29 @@
+---
+import { SITE } from '@/lib/site';
+---
+
+<footer class="foot wrap">
+	<p>{SITE.city} · <a href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
+</footer>
+
+<style lang="scss">
+	@use '../styles/tokens' as *;
+
+	.foot {
+		border-top: 1px solid var(--ink);
+		padding-block: k(28);
+		@include mono(13);
+
+		@include mobile {
+			padding-block: 24px calc(24px + env(safe-area-inset-bottom));
+		}
+	}
+
+	a {
+		@include hover {
+			text-decoration: underline;
+			text-decoration-thickness: from-font;
+			text-underline-position: from-font;
+		}
+	}
+</style>

@@ -1,0 +1,87 @@
+---
+/**
+ * Ruled columns: a mono label over serif text — the meta row, the brief,
+ * approach and outcome, and the credits of a case study.
+ */
+interface Item {
+	label: string;
+	lines?: string[];
+	text?: string;
+	list?: string[];
+	links?: { label: string; href: string }[];
+}
+
+interface Props {
+	items: Item[];
+	class?: string;
+}
+
+const { items, class: className } = Astro.props;
+---
+
+<div class:list={['columns', 'wrap', className]}>
+	{
+		items.map((item) => (
+			<div class="column rise" data-reveal>
+				<h2 class="column__label">{item.label}</h2>
+				<div class="column__body">
+					{item.lines?.map((line) => <p>{line}</p>)}
+					{item.text && <p>{item.text}</p>}
+					{item.list && (
+						<ul>
+							{item.list.map((entry) => (
+								<li>• {entry}</li>
+							))}
+						</ul>
+					)}
+					{item.links?.map((link) => (
+						<a class="u" href={link.href} target="_blank" rel="noopener">
+							{link.label}
+						</a>
+					))}
+				</div>
+			</div>
+		))
+	}
+</div>
+
+<style lang="scss">
+	@use '../../styles/tokens' as *;
+
+	.columns {
+		display: flex;
+		gap: k(40);
+
+		@include mobile {
+			flex-direction: column;
+			gap: 32px;
+		}
+	}
+
+	.column {
+		flex: 1 1 0;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: k(20);
+		border-top: 1px solid var(--ink);
+		padding-top: k(14);
+
+		@include mobile {
+			gap: 14px;
+			padding-top: 12px;
+		}
+	}
+
+	.column__label {
+		@include label;
+		font-weight: 400;
+	}
+
+	.column__body {
+		@include serif(21, 28, 17);
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+</style>

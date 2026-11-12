@@ -1,0 +1,18 @@
+---
+import Base from '@/layouts/Base.astro';
+import Intro from '@/components/Intro.astro';
+---
+
+<Base title="Not found">
+	<Intro text="This threshold leads nowhere — yet. Back to the index." trailingLine={false} />
+	<p class="back wrap"><a class="u" href="/">← all work</a></p>
+</Base>
+
+<style lang="scss">
+	@use '../styles/tokens' as *;
+
+	.back {
+		@include mono(13);
+		padding-bottom: k(140);
+	}
+</style>

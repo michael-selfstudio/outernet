@@ -1,0 +1,100 @@
+---
+/**
+ * 02 — Colour. Five fields, name above, value below. A swatch widens under
+ * the pointer and its neighbours give way (motion note 1 in the file, made
+ * for the rooms of an earlier home page, at home here); a click copies the
+ * value.
+ */
+interface Props {
+	swatches: { name: string; hex: string }[];
+}
+
+const { swatches } = Astro.props;
+---
+
+<ul class="swatches rise" data-reveal>
+	{
+		swatches.map((s) => (
+			<li class="swatch" style={`--c: ${s.hex}`}>
+				<button type="button" data-copy={s.hex} aria-label={`${s.name}, ${s.hex} — copy`}>
+					<span>{s.name}</span>
+					<span class="swatch__hex" data-label>{s.hex}</span>
+				</button>
+			</li>
+		))
+	}
+</ul>
+
+<script>
+	document.addEventListener('astro:page-load', () => {
+		document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((button) => {
+			button.addEventListener('click', async () => {
+				const label = button.querySelector<HTMLElement>('[data-label]');
+				const hex = button.dataset.copy ?? '';
+				try {
+					await navigator.clipboard.writeText(hex);
+				} catch {
+					return;
+				}
+				if (!label) return;
+				label.textContent = 'copied';
+				setTimeout(() => (label.textContent = hex), 1400);
+			});
+		});
+	});
+</script>
+
+<style lang="scss">
+	@use '../../styles/tokens' as *;
+
+	.swatches {
+		display: flex;
+		gap: k(16);
+		border-radius: k(40);
+		overflow: hidden;
+
+		@include mobile {
+			flex-direction: column;
+			gap: 8px;
+			border-radius: 20px;
+		}
+	}
+
+	.swatch {
+		flex: 1 1 0;
+		min-width: 0;
+		height: k(240);
+		background: var(--c);
+		transition: flex-grow 900ms $settle;
+
+		@include hover {
+			flex-grow: 1.7;
+		}
+
+		@include mobile {
+			flex: none;
+			height: 64px;
+		}
+	}
+
+	button {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		align-items: flex-start;
+		padding: k(16, 12);
+		text-align: left;
+		@include mono(12, 11);
+		color: var(--sand);
+		cursor: copy;
+		white-space: nowrap;
+
+		@include mobile {
+			flex-direction: row;
+			align-items: center;
+			padding-inline: 16px;
+		}
+	}
+</style>

@@ -1,0 +1,133 @@
+---
+/**
+ * 04 — Applications. A gallery of rows: a full-width picture, pairs, and a
+ * line of text between them. A picture "in a mat" (a poster) sits centred on
+ * a coloured card at its own size.
+ */
+import type { ImageMetadata } from 'astro';
+import Media from '../Media.astro';
+
+interface Item {
+	image: ImageMetadata;
+	alt: string;
+	video?: string;
+	background?: string;
+	mat?: { width: number; height: number };
+}
+
+type Row = { layout: 'full'; item: Item } | { layout: 'pair'; items: Item[] } | { layout: 'line'; text: string };
+
+interface Props {
+	rows: Row[];
+}
+
+const { rows } = Astro.props;
+// Card sizes in the file: full 1354 × 907, each of a pair 665 × 653.
+const PAIR = { width: 665, height: 653 };
+---
+
+<div class="gallery">
+	{
+		rows.map((row) => {
+			if (row.layout === 'line') return <p class="line rise" data-reveal>{row.text}</p>;
+			const items = row.layout === 'full' ? [row.item] : row.items;
+			return (
+				<div class:list={['row', `row--${row.layout}`]}>
+					{items.map((item) => (
+						<figure
+							class:list={['card', 'unmask', { 'card--mat': item.mat }]}
+							data-reveal
+							style={[
+								item.background && `--bg: ${item.background}`,
+								item.mat && `--mat-w: ${(item.mat.width / PAIR.width) * 100}%; --mat-h: ${(item.mat.height / PAIR.height) * 100}%`,
+							]
+								.filter(Boolean)
+								.join('; ')}
+						>
+							<Media
+								image={item.image}
+								alt={item.alt}
+								video={item.video}
+								sizes={row.layout === 'full' ? '(max-width: 820px) 100vw, 94vw' : '(max-width: 820px) 100vw, 47vw'}
+							/>
+						</figure>
+					))}
+				</div>
+			);
+		})
+	}
+</div>
+
+<style lang="scss">
+	@use '../../styles/tokens' as *;
+
+	.gallery {
+		display: flex;
+		flex-direction: column;
+		gap: k(55);
+		padding-top: k(32);
+
+		@include mobile {
+			gap: 12px;
+			padding-top: 8px;
+		}
+	}
+
+	.row {
+		display: flex;
+		gap: k(24);
+
+		@include mobile {
+			flex-direction: column;
+			gap: 12px;
+		}
+	}
+
+	.card {
+		position: relative;
+		flex: 1 1 0;
+		min-width: 0;
+		border-radius: k(40);
+		overflow: hidden;
+		background: var(--bg, var(--card));
+
+		> :global(.media) {
+			position: absolute;
+			inset: 0;
+		}
+
+		@include mobile {
+			flex: none; // a zero basis in a column would flatten the card
+			border-radius: 20px;
+		}
+	}
+
+	.row--full .card {
+		aspect-ratio: 1354 / 907;
+	}
+
+	.row--pair .card {
+		aspect-ratio: 665 / 653;
+	}
+
+	.card--mat > :global(.media) {
+		inset: auto;
+		left: 50%;
+		top: 50%;
+		width: var(--mat-w);
+		height: var(--mat-h);
+		translate: -50% -50%;
+	}
+
+	.line {
+		padding-block: k(50);
+		@include serif(64, 68);
+		max-width: k(977);
+
+		@include mobile {
+			padding-block: 40px;
+			font-size: 34px;
+			line-height: 1.1;
+		}
+	}
+</style>

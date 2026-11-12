@@ -1,0 +1,258 @@
+---
+/**
+ * The top bar. Two faces from the Figma file: the "outernet" wordmark on the
+ * index and info pages, and the chrome mark on case studies. The links are
+ * the same everywhere; the current one is underlined, as on the info frame.
+ *
+ * On a phone the eight links do not fit a line, so they move into a sheet
+ * opened by "menu" — a native popover: Esc and a tap outside close it, and
+ * no script is needed to open it.
+ */
+import { Image } from 'astro:assets';
+import mark from '@/assets/mark.png';
+import { NAV, SITE } from '@/lib/site';
+
+interface Props {
+	variant: 'wordmark' | 'mark';
+}
+
+const { variant } = Astro.props;
+const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const isCurrent = (href: string) =>
+	href === '/' ? path === '/' || path.startsWith('/work') : path === href || path.startsWith(`${href}/`);
+---
+
+<header class:list={['bar', 'wrap', `bar--${variant}`]} transition:name="site-header">
+	<a class="home" href="/" aria-label={`${SITE.name} — index`}>
+		{
+			variant === 'mark' ? (
+				<Image class="mark" src={mark} alt="" width={112} densities={[1, 2]} loading="eager" />
+			) : (
+				<span class="wordmark">{SITE.name}</span>
+			)
+		}
+	</a>
+
+	<nav class="links" aria-label="Main">
+		<ul>
+			{
+				NAV.map((item) => (
+					<li>
+						<a href={item.href} class:list={{ u: isCurrent(item.href) }} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+							{item.label}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</nav>
+
+	<button class="menu-button" type="button" popovertarget="menu" aria-label="Open the menu">menu</button>
+
+	<nav id="menu" class="sheet" popover aria-label="Main">
+		<button class="sheet__close" type="button" popovertarget="menu" popovertargetaction="hide">close</button>
+		<ul>
+			{
+				NAV.map((item, i) => (
+					<li style={`--i: ${i}`}>
+						<a href={item.href} class:list={{ u: isCurrent(item.href) }} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+							{item.label}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+		<p class="sheet__foot">{SITE.city} · <a href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
+	</nav>
+</header>
+
+<script>
+	// Following a link inside the sheet: close it, or the next page would
+	// arrive with the sheet still drawn on top of it.
+	document.addEventListener('astro:before-preparation', () => {
+		document.querySelector<HTMLElement>('#menu:popover-open')?.hidePopover();
+	});
+</script>
+
+<style lang="scss">
+	@use '../styles/tokens' as *;
+
+	.bar {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding-block: k(28);
+		color: var(--ink);
+	}
+
+	.wordmark {
+		display: block;
+		@include serif(30, 39);
+	}
+
+	// The case-study bar: the mark hangs off the bar at x 34, y 11 and the
+	// links sit right, as in "Branding project — template".
+	.bar--mark {
+		justify-content: flex-end;
+
+		.home {
+			position: absolute;
+			left: calc(var(--inset) - #{k(6)});
+			top: k(11);
+		}
+	}
+
+	.mark {
+		width: k(56);
+		height: auto;
+		transition: transform 900ms $settle;
+	}
+
+	.home {
+		@include hover {
+			.mark {
+				transform: rotate(-8deg) scale(1.06);
+			}
+		}
+	}
+
+	.links ul {
+		display: flex;
+		gap: k(28);
+	}
+
+	.links a {
+		@include mono(13);
+		display: block;
+		position: relative;
+
+		// Hover draws the underline the current page already has, from the
+		// left, instead of snapping it on.
+		&:not(.u)::after {
+			content: '';
+			position: absolute;
+			left: 0;
+			right: 0;
+			bottom: -0.08em;
+			height: 1px;
+			background: currentColor;
+			transform: scaleX(0);
+			transform-origin: right;
+			transition: transform 500ms $settle;
+		}
+
+		@include hover {
+			&::after {
+				transform: scaleX(1);
+				transform-origin: left;
+			}
+		}
+	}
+
+	.menu-button,
+	.sheet {
+		display: none;
+	}
+
+	@include mobile {
+		.bar {
+			padding-block: 20px;
+		}
+
+		.wordmark {
+			font-size: 26px;
+		}
+
+		.mark {
+			width: 44px;
+		}
+
+		.bar--mark .home {
+			position: static;
+		}
+
+		.bar--mark {
+			justify-content: space-between;
+		}
+
+		.links {
+			display: none;
+		}
+
+		.menu-button {
+			display: block;
+			@include mono(13);
+			padding: 8px 0 8px 16px;
+		}
+
+		.sheet {
+			position: fixed;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			max-width: none;
+			max-height: none;
+			margin: 0;
+			border: 0;
+			padding: 20px var(--gutter) calc(24px + env(safe-area-inset-bottom));
+			background: var(--paper);
+			color: var(--ink);
+			flex-direction: column;
+			justify-content: space-between;
+
+			&:popover-open {
+				display: flex;
+			}
+
+			ul {
+				display: flex;
+				flex-direction: column;
+				gap: 2px;
+			}
+
+			li a {
+				@include serif(46, 54);
+				font-size: clamp(36px, 11vw, 52px);
+			}
+
+			@include motion {
+				opacity: 0;
+				transition:
+					opacity 400ms $settle,
+					display 400ms allow-discrete,
+					overlay 400ms allow-discrete;
+
+				&:popover-open {
+					opacity: 1;
+
+					@starting-style {
+						opacity: 0;
+					}
+
+					li {
+						animation: rise 700ms $settle both;
+						animation-delay: calc(var(--i) * 40ms + 60ms);
+					}
+				}
+			}
+		}
+
+		.sheet__close {
+			align-self: flex-end;
+			@include mono(13);
+			padding: 8px 0 8px 16px;
+		}
+
+		.sheet__foot {
+			@include mono(13);
+		}
+	}
+
+	@keyframes rise {
+		from {
+			opacity: 0;
+			transform: translateY(18px);
+		}
+	}
+</style>

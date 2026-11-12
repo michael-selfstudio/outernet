@@ -1,0 +1,24 @@
+---
+/**
+ * One index page per kind of work in the navigation. The same wall as the
+ * home page, filtered; its intro is the one-line description of the kind.
+ */
+import type { GetStaticPaths } from 'astro';
+import Base from '@/layouts/Base.astro';
+import Intro from '@/components/Intro.astro';
+import WorkIndex from '@/components/WorkIndex.astro';
+import { CATEGORIES, NAV, type Category } from '@/lib/site';
+import { getWorks } from '@/lib/works';
+
+export const getStaticPaths = (() =>
+	NAV.filter((item) => item.category).map((item) => ({ params: { category: item.category } }))) satisfies GetStaticPaths;
+
+const category = Astro.params.category as Category;
+const meta = CATEGORIES[category];
+const works = await getWorks(category);
+---
+
+<Base title={meta.title} description={`${meta.title} — ${meta.intro}`}>
+	<Intro text={meta.intro} trailingLine={false} />
+	<WorkIndex works={works} empty={`${meta.title} — nothing here yet. Soon.`} />
+</Base>

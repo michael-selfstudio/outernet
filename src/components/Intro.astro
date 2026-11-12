@@ -1,0 +1,80 @@
+---
+/**
+ * The opening sentence of an index page. Words arrive one by one (motion
+ * note 3 in the Figma file), each surfacing out of a slight blur. Split at
+ * build time so the text is whole in the HTML and to anyone not watching.
+ */
+interface Props {
+	text: string;
+	/** The blank last line of the Figma text box, kept as space below. */
+	trailingLine?: boolean;
+}
+
+const { text, trailingLine = true } = Astro.props;
+const words = text.split(/\s+/);
+---
+
+<section class:list={['intro', 'wrap', { 'intro--trail': trailingLine }]}>
+	<h1 class="intro__text" aria-label={text}>
+		{
+			words.map((word, i) => (
+				<>
+					<span class="word" style={`--i: ${i}`} aria-hidden="true">
+						{word}
+					</span>{' '}
+				</>
+			))
+		}
+	</h1>
+</section>
+
+<style lang="scss">
+	@use '../styles/tokens' as *;
+
+	.intro {
+		padding-block: k(140) k(140);
+
+		&--trail {
+			padding-bottom: k(194); // 140 + the empty 54px line in the file
+		}
+
+		@include mobile {
+			padding-block: 56px 72px;
+
+			&--trail {
+				padding-bottom: 72px;
+			}
+		}
+	}
+
+	.intro__text {
+		@include serif(46, 54);
+		max-width: k(880);
+		text-wrap: pretty;
+
+		@include mobile {
+			font-size: 30px;
+			line-height: 1.17;
+			max-width: none;
+		}
+	}
+
+	.word {
+		display: inline-block;
+	}
+
+	@include motion {
+		:global(html.js) .word {
+			animation: word 1100ms $settle both;
+			animation-delay: calc(var(--i) * 38ms + 120ms);
+		}
+	}
+
+	@keyframes word {
+		from {
+			opacity: 0;
+			filter: blur(8px);
+			transform: translateY(0.18em);
+		}
+	}
+</style>
