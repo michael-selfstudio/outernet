@@ -60,11 +60,15 @@ All of it switches off under `prefers-reduced-motion`.
 
 ## Deploy
 
-Cloudflare Pages, connected to this repository:
+Live at **https://dilarabilek.com** — Cloudflare Pages project `outernet`,
+connected to this repository:
 
-- Production branch `main`; build `npm run build`; output `dist`.
-- Every other branch gets a preview URL (not indexed — `public/_headers`).
-- Once the domain is live, set `SITE_URL=https://<domain>` in the Pages project
-  (Settings → Variables) so canonical links and share cards use it.
+- Production branch `main`; build `npm run build`; output `dist`;
+  `SITE_URL=https://dilarabilek.com` (production only).
+- Every other branch gets a preview at `<branch>.outernet-5ee.pages.dev`
+  (not indexed — `public/_headers`); pull requests get the link as a comment.
+- `www` redirects to the bare domain (Cloudflare Redirect Rule).
 
-Release: merge `develop` into `main`, tag `X.Y.Z`, push both.
+Release: merge `develop` into `main` with a new `version` in `package.json`;
+`.github/workflows/release.yml` tags it `X.Y.Z`. Working rules for people and
+Claude: `CLAUDE.md`.
